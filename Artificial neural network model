@@ -1,0 +1,132 @@
+from pandas import read_csv
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn import preprocessing
+from sklearn.preprocessing import LabelEncoder, StandardScaler
+from tensorflow.keras import Sequential
+from tensorflow.keras.layers import Dense
+from sklearn.metrics import confusion_matrix, f1_score,recall_score,precision_score
+
+np.random.seed(42)
+
+df=read_csv('csv2_longer_classification_data.csv')
+#print(df.head())
+
+
+X,y=df.values[:,:-1],df.values[:,-1]
+#print(X)
+
+X=X.astype('float32')
+
+X_train,X_test,y_train, y_test=train_test_split(X,y,test_size=0.2)
+#print(X_train)
+
+trans=StandardScaler()
+
+X_train=trans.fit_transform(X_train)
+#print(X_train)
+
+X_test=trans.transform(X_test)
+#print(X_test)
+
+n_features=X_train.shape[1]
+
+model=Sequential()
+model.add(Dense(7,activation='relu',kernel_initializer='he_normal',input_shape=(n_features,)))
+#model.add(Dense(6,activation='relu',kernel_initializer='he_normal',input_shape=(n_features,)))
+#model.add(Dense(3,activation='relu',kernel_initializer='he_normal',input_shape=(n_features,)))
+#model.add(Dense(4,activation='relu',kernel_initializer='he_normal',input_shape=(n_features,)))
+
+model.add(Dense(1,activation='sigmoid'))
+
+model.compile(optimizer='adam',loss='binary_crossentropy',metrics=['accuracy'])
+history= model.fit(X_train,y_train,epochs=150,batch_size=32, validation_split=0.2, verbose=0)#validation_data=(X_val, y_val),verbose=0)
+
+loss,acc=model.evaluate(X_test,y_test,verbose=0)
+print('Test Accuracy: %.3f' % acc)
+print('Test loss: %.3f' % loss)
+
+#print(history.history.keys())
+
+
+#For new predictions
+#TEG_recirc_rate, no_of_equili_stages, temp, stripping_rate, water_content
+example_measures=np.array([2.9,1,360,0]) #offspec example (1)
+#example_measures=np.array([3.2,2,400,3]) #spec example(0) new
+#example_measures=np.array([3.6,2,400,0]) #spec example(0)
+#example_measures=np.array([3.8,3,380,0]) #spec example(0)
+#example_measures=np.array([3.2,3,400,0]) #spec example(0)
+
+example_measures=example_measures.reshape(1,-1)
+example_measures=example_measures.astype('float32')
+example_measures=trans.transform(example_measures)
+#print(example_measures)
+
+
+yay=model.predict([example_measures])
+yay_class=model.predict_classes([example_measures])
+
+if yay_class==0:
+    print('Predicted: %.3f' % yay)
+    print('Predicted Class: %.3f' % yay_class)
+    print("Pipeline quality gas meets water content specification!")
+
+elif yay_class==1:
+        print('Predicted: %.3f' % yay)
+        print('Predicted Class: %.3f' % yay_class)
+        print("Pipeline quality gas does not meet water content specification!")
+
+# history_dict=history.history
+# print(history_dict.keys())
+
+#To plot the model accuracy and loss
+from matplotlib import pyplot as plt
+plt.plot(history.history['accuracy'])
+plt.plot(history.history['val_accuracy'])
+plt.title('Model Accuracy')
+plt.ylabel('Accuracy')
+plt.xlabel('Epoch')
+plt.legend(['train', 'val'], loc='upper left')
+plt.show()
+
+
+plt.plot(history.history['loss'])
+plt.plot(history.history['val_loss'])
+plt.title('Model Loss')
+plt.ylabel('Loss')
+plt.xlabel('Epoch')
+plt.legend(['train', 'val'], loc='upper left')
+plt.show()
+
+
+
+#To validate model with experimental data (Arubi,2008)
+arubi=read_csv('lit_data.txt')
+#arubi=read_csv('lit2.csv')
+print(arubi.head())
+
+
+arubi_X,arubi_y=arubi.values[:,:-1],arubi.values[:,-1]
+arubi_X=trans.transform(arubi_X)
+
+arubi_loss,arubi_acc=model.evaluate(arubi_X,arubi_y,verbose=0)
+print('Arubi Accuracy: %.3f' % arubi_acc)
+print('Arubi loss: %.3f' % arubi_loss)
+
+
+
+arubi_y_predict=model.predict_classes(arubi_X)
+
+#Making the confusion confusion_matrix
+arubi_cm=confusion_matrix(arubi_y,arubi_y_predict)
+#cm=confusion_matrix(y_train,y1_predict)
+print('CM:',arubi_cm)
+
+arubi_pscore=precision_score(arubi_y,arubi_y_predict)
+print('Precision score:',arubi_pscore)
+
+arubi_rscore=recall_score(arubi_y,arubi_y_predict)
+print('Recall score:',arubi_rscore)
+
+arubi_fscore=f1_score(arubi_y,arubi_y_predict)
+print('F1 score: %.3f' % arubi_fscore)
