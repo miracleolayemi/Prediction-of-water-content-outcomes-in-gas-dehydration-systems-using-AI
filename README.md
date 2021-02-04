@@ -21,7 +21,7 @@ The ANN model was developed and fitted a three layer artificial neural network m
 The model was evaluated and validated  for the model loss, accuracy, confusion matrix, precision score, recall score, and F1 score using independent validation dataset apart from the training data set.
 
 # Evaluation with experimental literature data
-Compare the Water content outcome predictions of this artificial neural network model with selected experimental data from literature.
+Water content outcome predictions of this artificial neural network model were compared with selected experimental data from literature.
 
 # New predictions
-Make water content outcome predictions using unseen data set from process parameters of a natural gas dehydration unit.
+New predictions of water content outcome were made using unseen data set from process parameters of a natural gas dehydration unit.
