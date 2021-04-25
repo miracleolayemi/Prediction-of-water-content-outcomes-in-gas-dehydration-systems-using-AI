@@ -1,3 +1,4 @@
+#Libraries imported
 import pandas as pd
 import numpy as np
 import seaborn as sns
@@ -68,7 +69,7 @@ plt.show()
 sns.barplot(x='temp', y='TEG_recirc_rate',data=df, ci=None), #,ci='sd')
 sns.barplot(x='no_of_equili_stages', y='TEG_recirc_rate',data=df, ci=None) #1
 sns.barplot(x='stripping_rate', y='TEG_recirc_rate',data=df, ci=None)
-
+plt.show()
 
 #To show the effect of features on the target
 sns.barplot(x='temp', y='TEG_recirc_rate',data=df, hue='water_content_spec', ci=None)
